@@ -1,0 +1,7 @@
+*.exe
+*.o
+*.obj
+flight_nav
+CMakeLists.txt
+cmake-build-debug/
+.idea/
