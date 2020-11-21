@@ -54,6 +54,10 @@ int main(int argc, char **argv) {
     char starting_airport[] = "Sydney";
     char ending_airport[] = "Quebec";
 
+    // run for debug
+//    run(airports_file, connection_file, starting_airport, ending_airport);
+
+    // run for published
     run(argv[1], argv[2], argv[3], argv[4]);
     return 0;
 }
@@ -63,6 +67,8 @@ void run(char airports_file[], char connection_file[], char starting_airport[], 
     char airport_file_buff[MAX_ARRAY][MAX_ARRAY];
     char connection_file_buff[MAX_ARRAY][MAX_ARRAY];
     int connection[MAX_ARRAY][MAX_ARRAY];
+
+    // Init airports
     fp = fopen(airports_file, "r");
     if (fp == NULL) {
         perror("Error opening file");
@@ -76,6 +82,8 @@ void run(char airports_file[], char connection_file[], char starting_airport[], 
         addAirportToLast(createAirport(tok), airport_head);
     }
     fclose(fp);
+
+    // Init adjacent units
     fp = fopen(connection_file, "r");
     if (fp == NULL) {
         perror("Error opening file");
@@ -96,11 +104,17 @@ void run(char airports_file[], char connection_file[], char starting_airport[], 
         for (int j = 0; j < MAX_ARRAY; j++) {
             if (connection[i][j] != 0) {
                 num_of_adjacent++;
+            } else {
+                break;
             }
         }
         addAdjacentAirport(i, num_of_adjacent, connection[i], airport_head);
     }
 
+    // Debugger to check for the proper initialization
+//    printAllAirportInLinkedList(airport_head);
+
+    // get start and dest to pass in BFS
     Airport* start = getAirportByName(starting_airport, airport_head);
     Airport* dest = getAirportByName(ending_airport, airport_head);
     if (start == NULL || dest == NULL) {
@@ -109,10 +123,11 @@ void run(char airports_file[], char connection_file[], char starting_airport[], 
     }
 
     if (breathFirstSearch(start->id, dest->id, airport_head)) {
-        printf("Congratulations, you made it. Enjoy your holiday in %s.", dest->name);
+        setbuf(stdout, 0);
+        printf("\nCongratulations, you made it. Enjoy your holiday in %s.\n", dest->name);
     } else {
-        printf("%s\n", dest->name);
-        printf("Cannot reach destination, might want to buy a real navigation system next time.");
+        setbuf(stdout, 0);
+        printf("%s\n\nCannot reach destination, might want to buy a real navigation system next time.\n", dest->name);
     }
 }
 
@@ -197,10 +212,13 @@ void printAllAirportInLinkedList(Airport *airport_head) {
 }
 
 void printAirportInfo(Airport *airport) {
+    setbuf(stdout, 0);
     printf("Airport {id: %d, name: %s, num_of_adjacent: %d, adjacent: ", airport->id, airport->name, airport->num_of_adjacent_airport);
     for (int *iter = airport->adjacent_airport_ids; iter < airport->adjacent_airport_ids + airport->num_of_adjacent_airport ; iter += 1) {
+        setbuf(stdout, 0);
         printf("%d ", *iter);
     }
+    setbuf(stdout, 0);
     printf("}\n");
 }
 
@@ -212,8 +230,10 @@ bool breathFirstSearch(int starting_airport_id, int ending_airport_id, Airport* 
     // Get starting point from list
     Airport* starting_point = getAirportById(starting_airport_id, airport_head);
 
-    // starting point is visited, add it into the queue
+    // starting point is visited, print out and add it into the queue
     starting_point->visited = true;
+    setbuf(stdout, 0);
+    printf("%s\n", starting_point->name);
     enqueue(createAirportInQueue(starting_point), q);
 
     // while there are still unvisited airports, keep traversing the graph
@@ -231,10 +251,12 @@ bool breathFirstSearch(int starting_airport_id, int ending_airport_id, Airport* 
             if (!u->visited) {
                 u->previous_airport_id = w->id;
                 u->visited = true;
+                setbuf(stdout, 0);
+                printf("%s\n", u->name);
 
                 // u is the final destination, return success
                 if (u->id == ending_airport_id) {
-                    printAirportTrace(u, airport_head);
+//                    printAirportTrace(u, airport_head);
                     return true;
                 }
 
@@ -303,12 +325,14 @@ void printAirportTrace(Airport* airport, Airport* airport_head) {
     }
 
     if (airport->previous_airport_id == 0) {
+        setbuf(stdout, 0);
         printf("%s\n", airport->name);
         return;
     }
 
     Airport* prev = getAirportById(airport->previous_airport_id, airport_head);
     printAirportTrace(prev, airport_head);
+    setbuf(stdout, 0);
     printf("%s\n", airport->name);
 }
 
